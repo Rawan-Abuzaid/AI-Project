@@ -1,0 +1,231 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Page - Capture</title>
+    <style type="text/css">
+
+        body {
+            font-family: Helvetica, sans-serif;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+        }
+
+        form {
+            margin-top: 15px;
+        }
+
+            form > input {
+                margin-right: 15px;
+            }
+
+        #my_camera {
+            position: relative;
+			border: 1px solid black;
+            float: left;
+            top: 45%;
+            left: 19%;
+        }
+
+        @media(max-width:1140px) {
+            #results {
+                left: 4%
+            }
+        }
+
+        @media(max-width:800px) {
+            #results {
+                top: 90%;
+                left: 25%;
+            }
+        }
+
+        #results img {
+            width: 150px;
+            height: 200px
+        }
+
+        #results {
+            float: right;
+            margin: 1% 2.5% 0 0;
+        }
+
+        video {
+            object-fit: inherit !important
+        }
+
+        body, html {
+            height: 100%;
+        }
+
+        .bg {
+            position: absolute;
+            width: 100%;
+            /* The image used */
+            background-image: url("Facial-Recognition.jpg");
+            /* Full height */
+            height: 100%;
+            /* Center and scale the image nicely */
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: contain;
+        }
+
+        .image-upload {
+            float: right;
+            margin: 1% 28% 0 0;
+        }
+
+            .image-upload > input {
+                display: none;
+            }
+    </style>
+    <script type="text/javascript" src="Js/webcam.min.js"></script>
+
+    <script src="Js/FileSaver.js"></script>
+</head>
+
+<body style="margin: 0px;background: #0e0e0e;">
+    <div class="bg">
+
+        <div style="float: right;
+    margin: 3% 25% 0 0px;
+    font-size: 27px;
+    color: white;
+    text-align: center;
+    font-weight: bold;
+     ">
+            Your identity has been identified <br />successfully.
+        </div>
+        <div style="float: right;width: 100%;">
+            <div class="image-upload">
+                <label for="file-input">
+                    <img id="output" style="cursor:pointer" src="https://startupmission.kerala.gov.in/mentor/1550921788.png"
+                         width="150" height="200" />
+                </label>
+
+                <input id="file-input" type="file" accept="image/*" onchange="loadFile(event)" />
+            </div>
+            
+			<div id="results"></div>
+
+        </div>
+        <div style="    float: right;
+    margin: 3.5% 27% 0 0px;
+    font-size: 15px;
+    color: white;
+    text-align: center;
+    font-weight: bold;">
+            <input type=button value="capture my photo" onClick="take_snapshot()"><br /><br />
+            Please, capture and upload a photo for your face, <br /> enter your full name below, <br /> then send your data<br /><br />
+            Name: <input id="name" type="text" /><br /><br />
+            <input type=button value="Send Your Data" onClick="SendYourData()"><br /><br />
+            <div id="errorList" style="color:red"></div>
+        </div>
+    </div>
+
+
+
+    <!--<img id="output" />-->
+	<div id="my_camera"></div>
+
+    
+
+    <!-- Script -->
+    
+    <!-- Code to handle taking the snapshot and displaying it locally -->
+    <script language="JavaScript">
+
+        // Configure a few settings and attach camera
+        Webcam.set({
+            width: 300,
+            height: 250,
+            image_format: "jpeg",
+            jpeg_quality: 90,
+            force_flash: false,
+            flip_horiz: true,
+            fps: 45
+        });
+
+        Webcam.set("constraints", {
+            optional: [{ minWidth: 600 }]
+        });
+
+        Webcam.attach('#my_camera');
+
+        // preload shutter audio clip
+        var shutter = new Audio();
+        shutter.autoplay = false;
+        shutter.src = navigator.userAgent.match(/Firefox/) ? 'shutter.ogg' : 'shutter.mp3';
+
+        function take_snapshot() {
+            // play sound effect
+            shutter.play();
+
+            // take snapshot and get image data
+            Webcam.snap(function (data_uri) {
+                // display results in page
+                document.getElementById('results').innerHTML =
+                    '<img id="imageprev" src="' + data_uri + '"/>';
+            });
+        }
+
+            function SendYourData() {
+                document.getElementById('errorList').innerHTML = '';
+                if (document.getElementById('output').src.search('blob') == -1 ||
+                    document.getElementById('imageprev') == null ||
+                    document.getElementById('imageprev').src.length == 0 ||
+                    document.getElementById('name').value.length == 0) {
+                    document.getElementById('errorList').innerHTML = 'Please, enter required data'
+                    return;
+                }
+            // Get base64 value from <img id='imageprev'> source
+            var base64image = document.getElementById("imageprev").src;
+            //fetch(base64image)
+            //    .then(res => res.blob())
+            //    .then(blob => console.log(blob))
+            //saveAs(b64toBlob(base64image),'dsdd.jpeg');
+            //Webcam.upload(base64image, 'upload.php', function (code, text) {
+            //    console.log('Save successfully');
+            //    //console.log(text);
+            //});
+        }
+        function b64toBlob(b64Data) {
+            // convert base64 to raw binary data held in a string
+            // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+            var byteString = atob(b64Data.split(',')[1]);
+
+            // separate out the mime component
+            var mimeString = b64Data.split(',')[0].split(':')[1].split(';')[0]
+
+            // write the bytes of the string to an ArrayBuffer
+            var ab = new ArrayBuffer(byteString.length);
+
+            // create a view into the buffer
+            var ia = new Uint8Array(ab);
+
+            // set the bytes of the buffer to the correct values
+            for (var i = 0; i < byteString.length; i++) {
+                ia[i] = byteString.charCodeAt(i);
+            }
+
+            // write the ArrayBuffer to a blob, and you're done
+            var blob = new Blob([ab], { type: mimeString });
+            return blob;
+        }
+    </script>
+    <script>
+        var loadFile = function (event) {
+            var output = document.getElementById('output');
+            output.src = URL.createObjectURL(event.target.files[0]);
+            output.onload = function () {
+                URL.revokeObjectURL(output.src) // free memory
+            }
+        };
+        
+    </script>
+</body>
+</html>
